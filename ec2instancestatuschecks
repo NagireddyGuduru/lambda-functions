@@ -1,0 +1,27 @@
+import boto3
+names = {}
+ec2 = boto3.resource('ec2')
+def lambda_handler(event, context):
+    i = 0
+    for status in ec2.meta.client.describe_instance_status()['InstanceStatuses']:
+        names[i] = status
+        print(names[i])
+        print(names[i]['InstanceStatus']['Status'])
+        if names[i]['InstanceStatus']['Status'] == 'ok':
+            print("the instance with {} status is ok".format(names[i]['InstanceId']))
+            client1 = boto3.client('sns')
+            print ('welcome to mail notification')
+            client1.publish(
+            TopicArn ='arn:aws:sns:us-east-2:820174816125:sendmailec2stopandstart',
+            Message = ' ec2 instance status checks 2/2 are passed ',
+            Subject ='alert for amazon ec2 status checks !!!'
+           )
+        else:
+            print("the instance with {} status checks 2/2 are failed".format(names[i]['InstanceId']))
+            client1 = boto3.client('sns')
+            client1.publish(
+            TopicArn ='arn:aws:sns:us-east-2:820174816125:sendmailec2stopandstart',
+            Message = ' ec2 instance status checks 2/2 are  failed ',
+            Subject ='alert for amazon ec2 status checks !!!'
+           )
+        i = i+1
